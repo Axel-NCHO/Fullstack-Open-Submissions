@@ -1,9 +1,22 @@
 const express = require('express');
+const morgan  = require('morgan');
 
 const PORT = 3001
 
 const app = express();
 app.use(express.json());
+
+const originalSend = app.response.send
+
+app.response.send = function sendOverWrite(body) {
+    originalSend.call(this, body)
+    this.__custombody__ = body
+}
+
+morgan.token('res-body', (_req, res) =>
+    JSON.stringify(res.__custombody__),
+)
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :res-body'));
 
 const phonebookEntries = [
     {
