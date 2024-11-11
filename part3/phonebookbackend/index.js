@@ -1,22 +1,24 @@
 const express = require('express');
 const morgan  = require('morgan');
+const cors = require('cors')
 
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 
 const app = express();
+
 app.use(express.json());
 
 const originalSend = app.response.send
-
 app.response.send = function sendOverWrite(body) {
     originalSend.call(this, body)
     this.__custombody__ = body
 }
-
 morgan.token('res-body', (_req, res) =>
     JSON.stringify(res.__custombody__),
 )
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :res-body'));
+
+app.use(cors())
 
 const phonebookEntries = [
     {
@@ -76,6 +78,10 @@ app.post('/api/persons', (req, res) => {
         };
     phonebookEntries.push(person)
     res.status(201).json(person)
+})
+
+app.put('/api/persons/:id', (req, res) => {
+    res.status(404).send({error: "Not implemented"})
 })
 
 app.delete('/api/persons/:id', (req, res) => {
