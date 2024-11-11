@@ -1,5 +1,4 @@
 .idea
 **/node_modules/
-**/dist
 course
 /part3/phonebookbackend/test-rest/
