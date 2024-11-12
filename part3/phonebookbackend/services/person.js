@@ -16,8 +16,18 @@ const findById = async (id) => {
     return await Person.findById(id)
 }
 
+const updateById = async (id, data) => {
+    return await Person.findByIdAndUpdate(id, data, { new: true })
+}
+
+const deleteById = async (id) => {
+    await Person.findByIdAndDelete(id)
+}
+
 export default {
     createNewPerson,
     getAllPeople,
     findById,
+    updateById,
+    deleteById
 }

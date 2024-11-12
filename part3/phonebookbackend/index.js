@@ -23,28 +23,28 @@ app.use(cors())
 
 app.use(express.static('dist'))
 
-// const phonebookEntries = [
-//     {
-//         "id": "1",
-//         "name": "Arto Hellas",
-//         "number": "040-123456"
-//     },
-//     {
-//         "id": "2",
-//         "name": "Ada Lovelace",
-//         "number": "39-44-5323523"
-//     },
-//     {
-//         "id": "3",
-//         "name": "Dan Abramov",
-//         "number": "12-43-234345"
-//     },
-//     {
-//         "id": "4",
-//         "name": "Mary Poppendieck",
-//         "number": "39-23-6423122"
-//     }
-// ]
+const phonebookEntries = [
+    {
+        "id": "1",
+        "name": "Arto Hellas",
+        "number": "040-123456"
+    },
+    {
+        "id": "2",
+        "name": "Ada Lovelace",
+        "number": "39-44-5323523"
+    },
+    {
+        "id": "3",
+        "name": "Dan Abramov",
+        "number": "12-43-234345"
+    },
+    {
+        "id": "4",
+        "name": "Mary Poppendieck",
+        "number": "39-23-6423122"
+    }
+]
 
 // const generateId = () => {
 //     const minCeiled = Math.ceil(5);
@@ -58,7 +58,7 @@ app.get('/api/persons', (req, res) => {
         .catch(err => console.log(err))
 })
 
-app.get('/api/persons/:id', (req, res) => {
+app.get('/api/persons/:id', (req, res, next) => {
     personService
         .findById(req.params.id)
         .then(result => {
@@ -67,10 +67,7 @@ app.get('/api/persons/:id', (req, res) => {
             else
                 res.status(404).end()
         })
-        .catch(err => {
-            console.log(err)
-            res.status(400).send({error: "Malformed id"})
-        })
+        .catch(err => next(err))
 
 })
 
@@ -93,17 +90,22 @@ app.post('/api/persons', (req, res) => {
         .then(() => res.status(201).json(person))
 })
 
-app.put('/api/persons/:id', (req, res) => {
-    res.status(404).send({error: "Not implemented"})
+app.put('/api/persons/:id', (req, res, next) => {
+    personService
+        .updateById(req.params.id,
+            {
+                name: req.body.name,
+                number: req.body.number
+            })
+        .then(result => res.json(result))
+        .catch(err => next(err))
 })
 
-app.delete('/api/persons/:id', (req, res) => {
-    const idx = phonebookEntries.findIndex(p => p.id === req.params.id)
-    if (idx >= 0) {
-        phonebookEntries.splice(idx, 1);
-        res.status(204).end()
-    }
-    else res.status(404).end()
+app.delete('/api/persons/:id', (req, res, next) => {
+    personService
+        .deleteById(req.params.id)
+        .then(() => res.status(204).end())
+        .catch(err => next(err))
 })
 
 app.get('/info', (req, res) => {
@@ -115,6 +117,21 @@ app.get('/info', (req, res) => {
     )
 })
 
+const unknownEndpoint = (req, res) => {
+    res.status(404).send({ error: 'unknown endpoint' })
+}
+app.use(unknownEndpoint)
+
+const errorHandler = (error, req, res, next) => {
+    console.error(error.message)
+
+    if (error.name === 'CastError') {
+        return res.status(400).send({ error: 'Malformed id' })
+    }
+
+    next(error)
+}
+app.use(errorHandler)
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
