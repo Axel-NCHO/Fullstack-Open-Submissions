@@ -1,27 +1,55 @@
-import Person from '../models/person.js'
+import Person from "../models/person.js";
 
-const getAllPeople = async () => {
-    return await Person.find({})
+/**
+ * Get all the people from db
+ * @returns {Array} Array of people
+ */
+async function getAllPeople() {
+    return Person.find({});
 }
 
-const createNewPerson = async ({ name, number }) => {
+// eslint-disable-next-line jsdoc/require-returns -- Nothing to return
+/**
+ * Create a new person entry
+ * @param {Object} root0 new person object
+ * @param {string} root0.name name
+ * @param {string} root0.number number
+ */
+async function createNewPerson({ name, number }) {
     const person = new Person({
-        name: name,
-        number: number,
-    })
-    await person.save()
+        name,
+        number
+    });
+
+    await person.save();
 }
 
-const findById = async (id) => {
-    return await Person.findById(id)
+/**
+ * Find a person by their id
+ * @param {string} id id
+ * @returns {Object|null} person
+ */
+async function findById(id) {
+    return Person.findById(id);
 }
 
-const updateById = async (id, data) => {
-    return await Person.findByIdAndUpdate(id, data, { new: true, runValidators: true, context: 'query'})
+/**
+ * Update a person's info by their id
+ * @param {string} id id
+ * @param {string} data person object
+ * @returns {Object} updated person
+ */
+async function updateById(id, data) {
+    return Person.findByIdAndUpdate(id, data, { new: true, runValidators: true, context: "query" });
 }
 
-const deleteById = async (id) => {
-    await Person.findByIdAndDelete(id)
+// eslint-disable-next-line jsdoc/require-returns -- Nothing to return
+/**
+ * Delete a person by their id
+ * @param {string} id id
+ */
+async function deleteById(id) {
+    await Person.findByIdAndDelete(id);
 }
 
 export default {
@@ -30,4 +58,4 @@ export default {
     findById,
     updateById,
     deleteById
-}
+};
