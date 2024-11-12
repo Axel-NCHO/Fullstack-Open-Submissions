@@ -1,6 +1,7 @@
-const express = require('express');
-const morgan  = require('morgan');
-const cors = require('cors')
+import express from 'express';
+import morgan from 'morgan';
+import cors from 'cors';
+import personService from './services/person.js';
 
 const PORT = process.env.PORT || 3001
 
@@ -45,22 +46,32 @@ const phonebookEntries = [
     }
 ]
 
-const generateId = () => {
-    const minCeiled = Math.ceil(5);
-    const maxFloored = Math.floor(10_000);
-    return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
-}
+// const generateId = () => {
+//     const minCeiled = Math.ceil(5);
+//     const maxFloored = Math.floor(10_000);
+//     return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
+// }
 
 app.get('/api/persons', (req, res) => {
-    res.json(phonebookEntries);
+    personService.getAllPeople()
+        .then(results => res.json(results))
+        .catch(err => console.log(err))
 })
 
 app.get('/api/persons/:id', (req, res) => {
-    const person = phonebookEntries.find(p => p.id === req.params.id)
-    if (person)
-        res.json(person);
-    else
-        res.status(404).end()
+    personService
+        .findById(req.params.id)
+        .then(result => {
+            if (result)
+                res.json(result)
+            else
+                res.status(404).end()
+        })
+        .catch(err => {
+            console.log(err)
+            res.status(400).send({error: "Malformed id"})
+        })
+
 })
 
 app.post('/api/persons', (req, res) => {
@@ -74,12 +85,12 @@ app.post('/api/persons', (req, res) => {
 
     const person =
         {
-            id: generateId().toString(),
             name: req.body.name,
             number: req.body.number
         };
-    phonebookEntries.push(person)
-    res.status(201).json(person)
+    personService
+        .createNewPerson(person)
+        .then(() => res.status(201).json(person))
 })
 
 app.put('/api/persons/:id', (req, res) => {
