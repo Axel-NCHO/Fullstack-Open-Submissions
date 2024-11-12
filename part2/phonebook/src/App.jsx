@@ -48,7 +48,11 @@ const App = () => {
                         setTimeout(() =>
                             setNotif({message: "", type: ""}), 5000)
                     })
-                    .catch(err => console.log(err))
+                    .catch(err => {
+                        setNotif({message: err.response.data.error, type: "error"})
+                        setTimeout(() =>
+                            setNotif({message: "", type: ""}), 5000)
+                    })
             }
         }
     }
@@ -65,8 +69,8 @@ const App = () => {
                 setTimeout(() =>
                     setNotif({message: "", type: ""}), 5000)
             })
-            .catch(() => {
-                setNotif({message: `Information on ${person.name} has already been removed`, type: "error"})
+            .catch((err) => {
+                setNotif({message: err.response.data.error, type: "error"})
                 setTimeout(() =>
                     setNotif({message: "", type: ""}), 5000)
             })

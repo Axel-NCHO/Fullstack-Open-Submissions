@@ -17,7 +17,7 @@ const findById = async (id) => {
 }
 
 const updateById = async (id, data) => {
-    return await Person.findByIdAndUpdate(id, data, { new: true })
+    return await Person.findByIdAndUpdate(id, data, { new: true, runValidators: true, context: 'query'})
 }
 
 const deleteById = async (id) => {

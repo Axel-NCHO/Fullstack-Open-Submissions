@@ -71,7 +71,7 @@ app.get('/api/persons/:id', (req, res, next) => {
 
 })
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
     const name = req.body.name;
     const number = req.body.number;
     if (!name || !number)
@@ -88,6 +88,7 @@ app.post('/api/persons', (req, res) => {
     personService
         .createNewPerson(person)
         .then(() => res.status(201).json(person))
+        .catch(err => next(err))
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
@@ -127,6 +128,9 @@ const errorHandler = (error, req, res, next) => {
 
     if (error.name === 'CastError') {
         return res.status(400).send({ error: 'Malformed id' })
+    }
+    else if (error.name === 'ValidationError') {
+        return res.status(400).json({ error: error.message })
     }
 
     next(error)
