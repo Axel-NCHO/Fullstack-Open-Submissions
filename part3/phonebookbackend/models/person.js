@@ -19,8 +19,7 @@ const personSchema = new mongoose.Schema({
         minLength: 8,
         validate: {
             validator: (value) => /^(\d{2,3})-\d+$/.test(value),
-            message: (props) => ` ${props.value}: Wrong number format. Expected at least 8 digits with the first two or three ' +
-                'separated from the others by a dash '-'.`,
+            message: (props) => ` ${props.value}: Wrong number format. Expected at least 8 digits with the first two or three separated from the others by a dash '-'.`,
         },
         required: true,
     },
