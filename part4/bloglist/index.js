@@ -1,11 +1,9 @@
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
 import morgan from "morgan";
+import config from "./utils/config.js";
 import logger from "./utils/logger.js";
-
-dotenv.config();
 
 const app = express();
 
@@ -29,7 +27,7 @@ blogSchema.set("toJSON", {
 
 const Blog = mongoose.model("Blog", blogSchema);
 
-const mongoUrl = process.env.MONGODB_URI;
+const mongoUrl = config.env.MONGODB_URI;
 
 mongoose.connect(mongoUrl).then();
 
@@ -69,7 +67,7 @@ app.post("/api/blogs", (request, response) => {
         .catch(err => logger.error(err));
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = config.env.PORT || 3001;
 
 app.listen(PORT, () => {
     logger.info(`Server running on port ${PORT}`);
