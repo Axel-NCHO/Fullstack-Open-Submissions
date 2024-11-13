@@ -3,6 +3,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import morgan from "morgan";
+import logger from "./utils/logger.js";
 
 dotenv.config();
 
@@ -53,7 +54,8 @@ app.get("/api/blogs", (request, response) => {
         .find({})
         .then(blogs => {
             response.json(blogs);
-        });
+        })
+        .catch(err => logger.error(err));
 });
 
 app.post("/api/blogs", (request, response) => {
@@ -63,12 +65,12 @@ app.post("/api/blogs", (request, response) => {
         .save()
         .then(result => {
             response.status(201).json(result);
-        });
+        })
+        .catch(err => logger.error(err));
 });
 
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
-    // eslint-disable-next-line no-console -- Needed for debugging
-    console.log(`Server running on port ${PORT}`);
+    logger.info(`Server running on port ${PORT}`);
 });
