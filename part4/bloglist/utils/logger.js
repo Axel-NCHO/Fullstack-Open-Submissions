@@ -6,7 +6,9 @@
  * @param {...any} params info to log
  */
 function info(...params) {
-    console.log(...params);
+    if (process.env.NODE_ENV !== "test") {
+        console.log(...params);
+    }
 }
 
 // eslint-disable-next-line jsdoc/require-returns -- Nothing to return
@@ -15,7 +17,9 @@ function info(...params) {
  * @param {...any} params error to log
  */
 function error(...params) {
-    console.error(...params);
+    if (process.env.NODE_ENV !== "test") {
+        console.error(...params);
+    }
 }
 /* eslint-enable no-console -- End of disable */
 
