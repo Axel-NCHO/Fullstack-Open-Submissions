@@ -1,4 +1,5 @@
 import _ from "lodash";
+import User from "../models/user.js";
 
 const initialBlogs = [
     {
@@ -140,11 +141,22 @@ function mostLikes(blogs) {
     return _.maxBy(authorBlogsCount, "likes");
 }
 
+/**
+ * Returns all users in db
+ * @returns {Array} all users in db
+ */
+async function usersInDB() {
+    const users = await User.find({});
+
+    return users.map(u => u.toJSON());
+}
+
 export default {
     initialBlogs,
     dummy,
     totalLikes,
     favoriteBlog,
     mostBlogs,
-    mostLikes
+    mostLikes,
+    usersInDB
 };

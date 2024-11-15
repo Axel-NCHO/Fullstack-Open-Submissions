@@ -36,18 +36,39 @@ function unknownEndpoint(req, res) {
 function errorHandler(error, req, res, next) {
     if (error.name === "CastError") {
         res.status(400).send({ error: "Malformed id" });
-        return;
-    }
-    if (error.name === "ValidationError") {
+    } else if (error.name === "ValidationError") {
         res.status(400).json({ error: error.message });
-        return;
+    } else if (error.name === "MongoServerError" && error.message.includes("duplicate key error")) {
+        res.status(400).json({ error: "Username already in use" });
+    } else if (error.name === "JsonWebTokenError") {
+        res.status(401).json({ error: "Invalid authentication token" });
     }
 
     next(error);
 }
 
+// eslint-disable-next-line jsdoc/require-returns -- Nothing to return
+/**
+ * Extracts the authorization token "Bearer" from the request's headers
+ * @param {express.Request} req http request
+ * @param {express.Response} res http response
+ * @param {express.NextFunction} next next function
+ */
+function tokenExtractor(req, res, next) {
+    const auth = req.get("Authorization");
+
+    if (auth && auth.startsWith("Bearer ")) {
+        req.token = auth.replace("Bearer ", "");
+    } else {
+        req.token = null;
+    }
+
+    next();
+}
+
 export default {
     errorHandler,
     unknownEndpoint,
-    requestLogger
+    requestLogger,
+    tokenExtractor
 };
