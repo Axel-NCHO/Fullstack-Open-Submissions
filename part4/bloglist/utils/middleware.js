@@ -1,4 +1,6 @@
 import logger from "./logger.js";
+import jwt from "jsonwebtoken";
+import config from "./config.js";
 
 // eslint-disable-next-line jsdoc/require-returns -- Nothing to return
 /**
@@ -66,9 +68,36 @@ function tokenExtractor(req, res, next) {
     next();
 }
 
+// eslint-disable-next-line jsdoc/require-returns -- Nothing to return
+/**
+ * Returns the user id using the auth bearer token
+ * @param {express.Request} req http request
+ * @param {express.Response} res http response
+ * @param {express.NextFunction} next next function
+ */
+function userExtractor(req, res, next) {
+    const auth = req.get("Authorization");
+
+    if (auth && auth.startsWith("Bearer ")) {
+        const token = auth.replace("Bearer ", "");
+        const decodedToken = jwt.verify(token, config.env.JWT_SECRET);
+
+        if (!decodedToken.id) {
+            res.status(401).send({ error: "Invalid authentication token" });
+            return;
+        }
+        req.user = decodedToken.id;
+    } else {
+        req.user = null;
+    }
+
+    next();
+}
+
 export default {
     errorHandler,
     unknownEndpoint,
     requestLogger,
-    tokenExtractor
+    tokenExtractor,
+    userExtractor
 };

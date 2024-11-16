@@ -1,8 +1,6 @@
 import express from "express";
 import Blog from "../models/blog.js";
 import User from "../models/user.js";
-import jwt from "jsonwebtoken";
-import config from "../utils/config.js";
 
 // eslint-disable-next-line new-cap -- Router is default in express
 const blogsRouter = express.Router();
@@ -16,10 +14,8 @@ blogsRouter.get("/", async (request, response) => {
 });
 
 blogsRouter.post("/", async (request, response) => {
-    const decodedToken = jwt.verify(request.token, config.env.JWT_SECRET);
-
-    if (!decodedToken.id) {
-        response.status(401).send({ error: "Invalid authentication token" });
+    if (!request.user) {
+        response.status(401).send({ error: "Missing authentication token" });
         return;
     }
 
@@ -28,7 +24,7 @@ blogsRouter.post("/", async (request, response) => {
         return;
     }
 
-    const user = await User.findById(decodedToken.id);
+    const user = await User.findById(request.user);
 
     // Default likes to 0 if missing
     request.body.likes = request.body.likes
@@ -65,7 +61,19 @@ blogsRouter.put("/:id", async (request, response) => {
 });
 
 blogsRouter.delete("/:id", async (request, response) => {
-    await Blog.findByIdAndDelete(request.params.id);
+    const blog = await Blog.findById(request.params.id);
+
+    if (!blog) {
+        response.status(404).send({ error: "Blog not found" });
+        return;
+    }
+
+    if (blog.user.toString() !== request.user) {
+        response.status(403).send({ error: "You are not allowed to perform this action" });
+        return;
+    }
+    // eslint-disable-next-line no-underscore-dangle -- _id is default in mongodb
+    await Blog.findByIdAndDelete(blog._id);
     response.status(204).end();
 });
 

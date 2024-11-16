@@ -2,7 +2,7 @@
 
 import mongoose from "mongoose";
 // eslint-disable-next-line n/no-unsupported-features/node-builtins -- Alright
-import { test, beforeEach, after, describe } from "node:test";
+import { after, beforeEach, describe, test } from "node:test";
 import assert from "node:assert";
 import helper from "../utils/list_helper.js";
 // eslint-disable-next-line n/no-unpublished-import -- Not published
@@ -46,10 +46,22 @@ describe("api-tests", () => {
 
             await Blog.deleteMany({});
 
-            const blogObjects = helper.initialBlogs.map(blog => new Blog(blog));
-            const promises = blogObjects.map(blog => blog.save());
+            const blogObjects = helper.initialBlogs.map(blog => new Blog({
+                ...blog,
+                // eslint-disable-next-line no-underscore-dangle -- _id default in mongodb
+                user: user._id
+            }));
+            const blogIds = [];
+            const promises = blogObjects.map(async blog => {
+                const savedBlog = await blog.save();
+
+                blogIds.push(savedBlog.id);
+            });
 
             await Promise.all(promises);
+
+            user.blogs = user.blogs.concat(blogIds);
+            await user.save();
         });
 
         test("all blogs are served from /api/blogs endpoint", async () => {
@@ -185,8 +197,14 @@ describe("api-tests", () => {
             const r1 = await api.get("/api/blogs").expect(200);
             const initialCount = r1.body.length;
 
+            const authToken = await login({
+                username: "mluukkai",
+                password: "salainen"
+            });
+
             await api
                 .delete(`/api/blogs/${r1.body[0].id}`)
+                .set("Authorization", `Bearer ${authToken}`)
                 .expect(204);
 
             const r2 = await api.get("/api/blogs").expect(200);
