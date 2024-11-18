@@ -63,7 +63,7 @@ const App = () => {
     const newBlog = { title, author, url }
     blogService
         .addBlog(newBlog, user.token)
-        .then(() => {
+        .then((res) => {
           setNotif({message: `Added ${title} by ${author}`, type: "success"})
           setTimeout(() => {
             setNotif({message: "", type: ""})
